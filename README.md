@@ -1,6 +1,12 @@
 # School Bonus Application
 
-Мобильное приложение начисления бонусов (алгокоинов) для школьников.
+Мобильное приложение начисления бонусов (алгокоинов) для школьников.![photo_2025-11-14_22-55-45 (5)](https://github.com/user-attachments/assets/ea9952ed-fa50-4902-a74c-3595a111d69c)
+![photo_2025-11-14_22-55-45 (4)](https://github.com/user-attachments/assets/1bdc92a1-044b-4eea-b517-6a84e1384555)
+![photo_2025-11-14_22-55-45 (3)](https://github.com/user-attachments/assets/e1761ece-a4f0-440f-a791-a0e479ba0f39)
+![photo_2025-11-14_22-55-45 (2)](https://github.com/user-attachments/assets/f1df9b8e-f40d-49f9-a87f-bf32ea70279d)
+![photo_2025-11-14_22-55-45](https://github.com/user-attachments/assets/812cbd8a-2c78-45d7-b6ba-47b89918dfe6)
+![photo_2025-11-14_22-55-45 (6)](https://github.com/user-attachments/assets/d63876cd-4c00-454c-ba79-dd6318983978)
+
 
 ## Технологический стек
 
