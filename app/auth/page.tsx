@@ -2,14 +2,16 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { setAuthCredentials } from '@/lib/api'
 
 export default function AuthPage() {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -19,9 +21,35 @@ export default function AuthPage() {
       return
     }
 
-    // For demo purposes, accept any password
-    // In real app, verify credentials here
-    router.push('/profile')
+    setLoading(true)
+
+    try {
+      // Save credentials to localStorage
+      const login = 'admin'
+      setAuthCredentials(login, password)
+
+      // Test the credentials by making a request
+      const response = await fetch('http://localhost:3001/api/users/me', {
+        headers: {
+          'Authorization': `Basic ${btoa(`${login}:${password}`)}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        // Credentials are valid, redirect to profile
+        router.push('/profile')
+      } else {
+        // Invalid credentials
+        setError('Неверный пароль')
+        localStorage.removeItem('auth_credentials')
+      }
+    } catch (err) {
+      setError('Ошибка подключения к серверу')
+      localStorage.removeItem('auth_credentials')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -97,19 +125,22 @@ export default function AuthPage() {
             {/* Login button */}
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
-              Войти
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
+              {loading ? 'Вход...' : 'Войти'}
+              {!loading && (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              )}
             </button>
           </form>
         </div>

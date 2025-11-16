@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { userApi, ApiError } from '@/lib/api'
+import { userApi, ApiError, clearAuthCredentials } from '@/lib/api'
 import { UserDTO } from '@/lib/types'
 
 export default function ProfilePage() {
@@ -29,6 +29,11 @@ export default function ProfilePage() {
     } catch (error) {
       if (error instanceof ApiError) {
         console.error('Failed to load user:', error.message)
+        // If unauthorized, redirect to login
+        if (error.status === 401) {
+          clearAuthCredentials()
+          router.push('/auth')
+        }
       }
     } finally {
       setLoading(false)
@@ -98,6 +103,7 @@ export default function ProfilePage() {
   }
 
   const handleLogout = () => {
+    clearAuthCredentials()
     router.push('/auth')
   }
 

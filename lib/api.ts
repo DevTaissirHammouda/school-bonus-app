@@ -22,6 +22,39 @@ class ApiError extends Error {
   }
 }
 
+// Authentication helper
+function getAuthHeaders(): HeadersInit {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Try to get credentials from localStorage
+  if (typeof window !== 'undefined') {
+    const credentials = localStorage.getItem('auth_credentials');
+    if (credentials) {
+      const { login, password } = JSON.parse(credentials);
+      const encoded = btoa(`${login}:${password}`);
+      headers['Authorization'] = `Basic ${encoded}`;
+    }
+  }
+
+  return headers;
+}
+
+// Save credentials to localStorage
+export function setAuthCredentials(login: string, password: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('auth_credentials', JSON.stringify({ login, password }));
+  }
+}
+
+// Clear credentials
+export function clearAuthCredentials(): void {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('auth_credentials');
+  }
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     let errorData: ErrorResponse | null = null;
@@ -49,19 +82,23 @@ async function handleResponse<T>(response: Response): Promise<T> {
 // User API
 export const userApi = {
   getCurrentUser: async (): Promise<UserDTO> => {
-    const response = await fetch(`${API_BASE_URL}/users/me`);
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<UserDTO>(response);
   },
 
   getUserById: async (id: number): Promise<UserDTO> => {
-    const response = await fetch(`${API_BASE_URL}/users/${id}`);
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<UserDTO>(response);
   },
 
   createUser: async (user: UserDTO): Promise<UserDTO> => {
     const response = await fetch(`${API_BASE_URL}/users`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(user),
     });
     return handleResponse<UserDTO>(response);
@@ -70,7 +107,7 @@ export const userApi = {
   updateUser: async (id: number, user: UserDTO): Promise<UserDTO> => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(user),
     });
     return handleResponse<UserDTO>(response);
@@ -79,6 +116,7 @@ export const userApi = {
   deleteUser: async (id: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
   },
@@ -87,19 +125,23 @@ export const userApi = {
 // Group API
 export const groupApi = {
   getAvailableGroups: async (): Promise<GroupDTO[]> => {
-    const response = await fetch(`${API_BASE_URL}/groups`);
+    const response = await fetch(`${API_BASE_URL}/groups`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<GroupDTO[]>(response);
   },
 
   getGroupById: async (id: number): Promise<GroupDTO> => {
-    const response = await fetch(`${API_BASE_URL}/groups/${id}`);
+    const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<GroupDTO>(response);
   },
 
   createGroup: async (group: CreateGroupRequest): Promise<GroupDTO> => {
     const response = await fetch(`${API_BASE_URL}/groups`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(group),
     });
     return handleResponse<GroupDTO>(response);
@@ -108,7 +150,7 @@ export const groupApi = {
   updateGroup: async (id: number, group: GroupDTO): Promise<GroupDTO> => {
     const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(group),
     });
     return handleResponse<GroupDTO>(response);
@@ -117,6 +159,7 @@ export const groupApi = {
   deleteGroup: async (id: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/groups/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
   },
@@ -124,7 +167,10 @@ export const groupApi = {
   addStudentToGroup: async (groupId: number, studentId: number): Promise<GroupDTO> => {
     const response = await fetch(
       `${API_BASE_URL}/groups/${groupId}/students/${studentId}`,
-      { method: 'POST' }
+      { 
+        method: 'POST',
+        headers: getAuthHeaders(),
+      }
     );
     return handleResponse<GroupDTO>(response);
   },
@@ -132,7 +178,10 @@ export const groupApi = {
   removeStudentFromGroup: async (groupId: number, studentId: number): Promise<GroupDTO> => {
     const response = await fetch(
       `${API_BASE_URL}/groups/${groupId}/students/${studentId}`,
-      { method: 'DELETE' }
+      { 
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
     );
     return handleResponse<GroupDTO>(response);
   },
@@ -141,17 +190,23 @@ export const groupApi = {
 // Present API
 export const presentApi = {
   getPresents: async (page = 0, size = 20): Promise<MobilePresentResponse[]> => {
-    const response = await fetch(`${API_BASE_URL}/presents?page=${page}&size=${size}`);
+    const response = await fetch(`${API_BASE_URL}/presents?page=${page}&size=${size}`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<MobilePresentResponse[]>(response);
   },
 
   getPresent: async (id: number): Promise<AdminPresentResponse> => {
-    const response = await fetch(`${API_BASE_URL}/presents/${id}`);
+    const response = await fetch(`${API_BASE_URL}/presents/${id}`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<AdminPresentResponse>(response);
   },
 
   searchPresents: async (query: string): Promise<MobilePresentResponse[]> => {
-    const response = await fetch(`${API_BASE_URL}/presents/search?query=${encodeURIComponent(query)}`);
+    const response = await fetch(`${API_BASE_URL}/presents/search?query=${encodeURIComponent(query)}`, {
+      headers: getAuthHeaders(),
+    });
     return handleResponse<MobilePresentResponse[]>(response);
   },
 
@@ -164,10 +219,15 @@ export const presentApi = {
     const formData = new FormData();
     photos.forEach((photo) => formData.append('photos', photo));
 
+    // Get auth headers but remove Content-Type for FormData
+    const headers = getAuthHeaders();
+    delete (headers as Record<string, string>)['Content-Type'];
+
     const response = await fetch(
       `${API_BASE_URL}/presents?name=${encodeURIComponent(name)}&priceCoins=${priceCoins}&stock=${stock}`,
       {
         method: 'POST',
+        headers,
         body: formData,
       }
     );
@@ -177,7 +237,7 @@ export const presentApi = {
   updatePresent: async (id: number, update: PresentUpdateRequest): Promise<AdminPresentResponse> => {
     const response = await fetch(`${API_BASE_URL}/presents/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(update),
     });
     return handleResponse<AdminPresentResponse>(response);
@@ -186,6 +246,7 @@ export const presentApi = {
   deletePresent: async (id: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/presents/${id}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
   },
@@ -194,8 +255,13 @@ export const presentApi = {
     const formData = new FormData();
     photos.forEach((photo) => formData.append('photos', photo));
 
+    // Get auth headers but remove Content-Type for FormData
+    const headers = getAuthHeaders();
+    delete (headers as Record<string, string>)['Content-Type'];
+
     const response = await fetch(`${API_BASE_URL}/presents/${presentId}/photos`, {
       method: 'POST',
+      headers,
       body: formData,
     });
     return handleResponse<AdminPresentResponse>(response);
@@ -204,6 +270,7 @@ export const presentApi = {
   deletePhoto: async (presentId: number, photoId: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/presents/${presentId}/photos/${photoId}`, {
       method: 'DELETE',
+      headers: getAuthHeaders(),
     });
     return handleResponse<void>(response);
   },
